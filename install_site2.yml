@@ -1,0 +1,39 @@
+---
+
+- hosts: all
+  become: true
+  tasks:
+
+  - name: install the apache and php packages for RedHat
+    dnf:
+      name: 
+        - httpd
+        - php
+      state: latest
+      update_cache: yes
+    when: ansible_distribution == "RedHat"
+
+- hosts: web-servers
+  become: true
+  tasks:
+
+  - name: install mariadb package (RedHat)
+    dnf:
+      name: mariadb
+      state: latest
+
+  - name: Enable service to start on boot up
+    service:
+      name: httpd
+      state: started
+    when: ansible_distribution == "RedHat"
+
+
+- hosts: file-servers
+  become: true
+  tasks:
+
+  - name: install samba package
+    package:
+      name: samba
+      state: latest
