@@ -1,39 +1,60 @@
 ---
 
-- hosts: all
+- hosts: web-servers
   become: true
-  tasks:
+  pre_tasks:
 
+  tasks:
   - name: install the apache and php packages for RedHat
+    tags: always
     dnf:
       name: 
         - httpd
         - php
       state: latest
       update_cache: yes
-    when: ansible_distribution == "RedHat"
-
-- hosts: web-servers
-  become: true
-  tasks:
+    when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8' 
 
   - name: install mariadb package (RedHat)
+    tags: always
     dnf:
       name: mariadb
       state: latest
 
-  - name: Enable service to start on boot up
-    service:
-      name: httpd
-      state: started
-    when: ansible_distribution == "RedHat"
-
+#  - name: Enable service to start on boot up
+ #   tags: always
+  #  service:
+   #   name: httpd
+   #   state: started
+    #when: ansible_distribution == "RedHat"
 
 - hosts: file-servers
   become: true
   tasks:
+  - name: install updates (Ubuntu)
+    tags: apache, apache2, ubuntu
+    apt:
+      upgrade: dist
+      update_cache: yes
+    when: ansible_distribution == "ubuntu"
+
+  - name: install apache and php for ubuntu servers
+    apt:
+      name:
+        - apache2
+        - libapache2-mod-php
+      state: latest
+    when: ansible_distribution == "Ubuntu"
+
+  - name: install mariadb package (Ubuntu)
+    tags: db, mariadb, ubuntu
+    apt:
+      name: mariadb-server
+      state: latest
+    when: ansible_distribution == "Ubuntu"
 
   - name: install samba package
+    
     package:
       name: samba
       state: latest
