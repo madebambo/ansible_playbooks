@@ -18,6 +18,33 @@
       update_cache: yes
     when: ansible_distribution == "Ubuntu"
 
+
+- hosts: all
+  become: true
+  tasks:
+  
+  - name: create simone user
+    tags: always
+    user:
+      name: simone
+      groups: root
+
+  - name: add ssh key for simone
+    tags: always
+    authorized_key:
+      user: simone
+      key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCojnqSGiFiT5qIZZYo6dkxLB9VB/GuQXJ3THD7F4GmTu0Kv2b2vql9X1H1e91J/YCXjOJdcYxZ7u8VrXYTo5XR46BOJIQhWy9A6WU7n4/alqWGiP73K383tagPax9gOkDHykVykxEPdzzbMThMHDV/JGT0YPz/EbzPWEEG8WeOH4MjaBXmT6K34WlyEfzXfRZRZK+jHLpICcwE2wHmPHIWn/K6sVFxZPbFT5BG5zhKQ1RnBh49NwOW1YCuzI4ATshP7bCWyM2trTBZ/tVHI9walKpoaFjOz2OyQsnE+MoygmNAEKon0MQI/VeGuezFwwB6gMa/eI9n3Prjnn8cv10h ansible"
+
+  - name: add sudoers file for simone
+    tags: always
+    copy:
+      src: sudoer_simone
+      dest: /etc/sudoers.d/simone
+      owner: root
+      group: root
+      mode: 0440
+  
+
 - hosts: workstation
   become: true
   tasks:
