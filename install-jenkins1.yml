@@ -1,42 +1,116 @@
 ---
+
 - name: install jenkins
-  hosts: servers
-  become: yes
-  become_user: root
+  hosts: all
+  become: true
+#  become_user: root
+
   tasks:
   - name: yum update
-    dnf:
+    yum:
       name: '*'
       state: latest
+      update_cache: yes
+    when: ansible_distribution != 'Ubuntu'
 
-  - name: add the jenkins repo
+  - name: Update apt cache
+    apt:
+      upgrade: dist
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"    
+
+  - name: add the jenkins repo (Not Ubuntu)
     get_url:
       url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
       dest: /etc/yum.repos.d/jenkins.repo
+    when: ansible_distribution != 'Ubuntu'
 
-  - name: import a key file from jenkins-ci
+  - name: import a key file from jenkins-ci (Not Ubuntu)
     ansible.builtin.rpm_key:
       state: present
       key: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+    when: ansible_distribution != 'Ubuntu'
+
+
+  - name: add the jenkins repo (Ubuntu)
+    apt_repository:
+      url: https://pkg.jenkins.io/debian-stable binary/
+      dest: /etc/apt/sources.list.d/jenkins.list
+      state: present
+    when: ansible_distribution == "Ubuntu"
+
+#  - name: Add Jenkins APT repository (Ubuntu)
+#   apt_repository:
+#     repo: deb https://pkg.jenkins.io/debian-stable binary/
+#     state: present
+#   when: ansible_distribution == "Ubuntu"
+
+
+  - name: Add Jenkins APT key (Ubuntu)
+    apt_key:
+      url: https://pkg.jenkins.io/debian/jenkins.io.key
+      state: present
+    when: ansible_distribution == "Ubuntu"
+
+
+#- name: add the jenkins repo (Ubuntu)
+#    get_url:
+#     url: https://pkg.jenkins.io/debian-stable binary/
+#      dest: /etc/apt/sources.list.d/jenkins.list
+#   when: ansible_distribution == "Ubuntu"
+
 
   - name: dnf update
-    dnf:
+    yum:
       name: '*'
       state: latest
+      update_cache: yes
+    when: ansible_distribution != 'Ubuntu'
 
-  - name: install java
-    dnf:
-      name: java-1.8.0-openjdk
+  - name: Update apt cache
+    apt:
+      upgrade: dist
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"
+
+  - name: Install OpenJDK 11
+    package:
+      name: java-11-openjdk
       state: present
+    when: ansible_distribution != 'Ubuntu'
 
-  - name: install jenkins
+  - name: Install OpenJDK 11
+    apt:
+      name: openjdk-11-jdk
+      state: present
+    when: ansible_distribution == "Ubuntu"
+
+  - name: install jenkins (RedHats)
     dnf:
       name: jenkins
-      state: latest
-
-  - name: start jenkins
-    ansible.builtin.systemd:
-      enabled: yes
+      state: present
+      update_cache: yes
+    when: ansible_distribution != 'Ubuntu'
+                   
+  - name: Install Jenkins (Ubuntu)
+    apt:
       name: jenkins
+      state: present
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"
+    
+  - name: start jenkins
+    service:
+      name: jenkins
+      enabled: true
       state: started
       daemon_reload: true
+
+#  - name: start jenkins
+#    ansible.builtin.systemd:
+#     enabled: yes
+#      name: jenkins
+#      state: started
+#      daemon_reload: true
+
+
