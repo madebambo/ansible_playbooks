@@ -34,10 +34,13 @@
     when: ansible_distribution != 'Ubuntu'
 
 
+ # - name: Add Jenkins APT key (Ubuntu)
+  #  apt_key:
+  #    url: https://pkg.jenkins.io/debian/jenkins.io.key
+   #   state: present
+
   - name: Add Jenkins APT key (Ubuntu)
-    apt_key:
-      url: https://pkg.jenkins.io/debian/jenkins.io.key
-      state: present
+    command: "sudo sh -c 'echo deb [signed-by=/usr/share/keyrings/jenkins.gpg] http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'"
     when: ansible_distribution == "Ubuntu"
 
   - name: Add Jenkins APT repository (Ubuntu)

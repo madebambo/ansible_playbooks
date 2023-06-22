@@ -1,28 +1,17 @@
-- name: install httpd package (CentOS)
+- name: install apache and php httpd package
   tags: apache,centOS,httpd
-  dnf:
+  packages:
     name:
-      - httpd
-      - php
+      - "{{ apache_package_name }}"
+      - "{{ php_package_name }}"
     state: latest
-  when: ansible_distribution == "CentOS"
 
-- name: start and enable httpd (CentOS)
+- name: start and enable httpd
   tags: apache,centos,httpd
   service:
-    name: httpd
+    name: "{{ apache_service }}"
     state: started
     enabled: yes
-  when: ansible_distribution == "CentOS"
-
-- name: install apache2 package (Ubuntu)
-  tags: apache,apache2,ubuntu
-  apt:
-    name:
-      - apache2
-      - libapache2-mod-php
-    state: latest
-  when: ansible_distribution == "Ubuntu"
 
 - name: change e-mail address for admin
   tags: apache,centos,httpd
@@ -33,12 +22,12 @@
   when: ansible_distribution == "CentOS"
   register: httpd
 
-- name: restart httpd (CentOS)
-  tags: apache,centos,httpd
+- name: restart httpd
+  tags: apache,httpd
   service:
-    name: httpd
+    name: "{{ apache_service }}"
     state: restarted
-  when: httpd.changed
+  when: apache.changed
 
 - name: copy default html file for site
   tags: apache,apache2,httpd

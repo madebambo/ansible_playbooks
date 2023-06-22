@@ -14,9 +14,7 @@
     when: ansible_distribution != 'Ubuntu'
 
   - name: Update apt cache
-    apt:
-      update_cache: yes
-    become: true
+    shell: apt update
     when: ansible_distribution == "Ubuntu"    
 
 
@@ -34,17 +32,19 @@
     when: ansible_distribution != 'Ubuntu'
 
 
-  - name: Add Jenkins APT key (Ubuntu)
-    apt_key:
-      url: https://pkg.jenkins.io/debian/jenkins.io.key
-      state: present
-    when: ansible_distribution == "Ubuntu"
+  - name: Add Jenkins repository
+    block:
+      - name: Create Jenkins repository file
+        copy:
+          content: http://pkg.jenkins.io/debian-stable binary/
+          dest: /etc/apt/sources.list.d/jenkins.list
+        when: ansible_distribution == "Ubuntu"
 
-  - name: Add Jenkins APT repository (Ubuntu)
-    apt_repository:
-      repo: deb https://pkg.jenkins.io/debian-stable binary/
-      state: present
-    when: ansible_distribution == "Ubuntu"
+      - name: Import Jenkins repository key
+        apt_key:
+          url: https://pkg.jenkins.io/debian/jenkins.io.key
+          state: present
+        when: ansible_distribution == "Ubuntu"
 
 
   - name: dnf update
